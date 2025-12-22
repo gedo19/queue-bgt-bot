@@ -1,0 +1,27 @@
+{
+  "name": "queue",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js",
+    "client": "npm run dev --prefix client",
+    "build:client": "npm run build --prefix client",
+    "dev": "concurrently \"npm run start\" \"npm run client\" --names \"SERVER,CLIENT\" --prefix-colors \"yellow,cyan\"",
+    "prod": "npm run build:client && node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "socket.io": "^4.8.1",
+    "telegraf": "^4.16.3"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
