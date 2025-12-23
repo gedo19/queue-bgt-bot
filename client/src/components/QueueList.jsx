@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import WebApp from '@twa-dev/sdk'; // Импортируем SDK
+import WebApp from '@twa-dev/sdk';
 
 function Countdown({ startTime, durationMinutes, targetTime }) {
   const [timeLeft, setTimeLeft] = useState(null);
