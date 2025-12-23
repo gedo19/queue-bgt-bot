@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
+import WebApp from '@twa-dev/sdk';
 import { socket } from '../services/socket';
+
 
 export function useQueue(user) {
   const [queue, setQueue] = useState([]);
