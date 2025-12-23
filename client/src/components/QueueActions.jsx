@@ -2,20 +2,21 @@ import React, { useState, useEffect } from 'react';
 
 export function QueueActions({ isInQueue, onJoin, onLeave }) {
   const [duration, setDuration] = useState('');
-  const [targetTime, setTargetTime] = useState(''); // "17:00"
+  const [targetTime, setTargetTime] = useState('');
+  const [description, setDescription] = useState('');
 
   useEffect(() => {
     if (isInQueue) {
-      // Если мы успешно попали в очередь, сбрасываем поля в исходное состояние
       setDuration('');
       setTargetTime('');
+      setDescription('');
     }
   }, [isInQueue]);
 
   const handleJoinClick = () => {
     let targetTimestamp = null;
+
     if (targetTime) {
-      // 1. Берем текущую дату пользователя
       const now = new Date();
       const [hours, minutes] = targetTime.split(':').map(Number);
 
@@ -35,6 +36,7 @@ export function QueueActions({ isInQueue, onJoin, onLeave }) {
     onJoin(
       duration ? parseInt(duration) : null,
       targetTimestamp,
+      description,
     );
   };
 
@@ -47,37 +49,45 @@ export function QueueActions({ isInQueue, onJoin, onLeave }) {
   }
 
   return (
-    <div className="d-flex gap-2">
-      {/* Поле ввода (15% места, но не меньше 70px) */}
-      <div style={{ width: '20%', minWidth: '70px' }}>
-        <input
-          type="number"
-          className="form-control form-control-lg text-center px-1"
-          placeholder="30"
-          value={duration}
-          onChange={(e) => setDuration(e.target.value)}
-          aria-label="Минуты"
-        />
-      </div>
+    <div className="d-flex flex-column gap-2">
+      <input
+        type="text"
+        className="form-control"
+        placeholder="Комментарий (необязательно)"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        maxLength={60}
+      />
 
-      {/* 2. Поле Время (15%) - НОВОЕ */}
-      <div style={{ width: '15%', minWidth: '70px' }}>
-        <input
-          type="time"
-          className="form-control form-control-lg text-center px-0"
-          value={targetTime}
-          onChange={(e) => setTargetTime(e.target.value)}
-          aria-label="Время записи"
-        />
-      </div>
+      <div className="d-flex gap-2">
+        <div style={{ width: '25%', minWidth: '70px' }}>
+          <input
+            type="number"
+            className="form-control form-control-lg text-center px-1"
+            placeholder="30"
+            value={duration}
+            onChange={(e) => setDuration(e.target.value)}
+          />
+        </div>
 
-      {/* 3. Кнопка */}
-      <button
-        className="btn btn-primary btn-lg shadow flex-grow-1"
-        onClick={handleJoinClick}
-      >
-        {targetTime ? `К ${targetTime}` : 'В очередь'}
-      </button>
+        {/* Поле Время */}
+        <div style={{ width: '25%', minWidth: '70px' }}>
+          <input
+            type="time"
+            className="form-control form-control-lg text-center px-0"
+            value={targetTime}
+            onChange={(e) => setTargetTime(e.target.value)}
+          />
+        </div>
+
+        {/* Кнопка */}
+        <button
+          className="btn btn-primary btn-lg shadow flex-grow-1"
+          onClick={handleJoinClick}
+        >
+          {targetTime ? `К ${targetTime}` : 'В очередь'}
+        </button>
+      </div>
     </div>
   );
 }

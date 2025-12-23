@@ -12,23 +12,42 @@ export const queueService = {
     if (u) u.notifiedBookingWarning = true;
   },
 
-  // Теперь принимаем объект с duration
-  add: (user, durationMin = 30, targetTimestamp = null) => {
+  add: (user, durationMin = 30, targetTimestamp = null, description) => {
     if (!queue.find(u => u.id === user.id)) {
+      const now = Date.now();
       const newUser = {
         ...user,
-        duration: durationMin,     // Сколько минут попросил
-        startTime: null,           // Когда начал (для 1-го места)
-        notifiedTimeout: false,    // Чтобы не спамить уведомлениями
+        duration: durationMin,
+        startTime: null,
+        notifiedTimeout: false,
         targetTime: targetTimestamp,
         notifiedBookingWarning: false,
+        description: description || '',
       };
 
-      // Если очередь была пуста, этот юзер сразу становится первым -> засекаем время
       if (queue.length === 0) {
         newUser.startTime = Date.now();
         queue.push(newUser);
         return true;
+      }
+
+      if (queue.length === 1 && !targetTimestamp) {
+        const leader = queue[0];
+
+        // Лидер ждет конкретного времени?
+        if (leader.targetTime && leader.targetTime > now) {
+          const myFinishTime = now + (durationMin * 60 * 1000);
+
+          // Мы успеваем до его старта?
+          if (myFinishTime <= leader.targetTime) {
+            // ДА! Мы становимся новым лидером.
+            // Старый лидер (который ждет) остается вторым, его startTime пока не нужен.
+
+            newUser.startTime = now; // Мы начинаем прямо сейчас
+            queue.unshift(newUser);  // Вставляем в начало (индекс 0)
+            return true;
+          }
+        }
       }
 
       if (!targetTimestamp) {
@@ -36,47 +55,21 @@ export const queueService = {
         return true;
       }
 
-      // ЕСЛИ ВРЕМЯ УКАЗАНО -> Ищем место вставки
-      // Мы не можем сместить лидера (index 0), поэтому начинаем поиск места после него
-      // Нам нужно найти индекс i, после которого мы встанем.
-
-      const now = Date.now();
       let accumulatedTimeMs = 0;
-
-      // Если у текущего лидера (index 0) уже идет время, учитываем остаток?
-      // Для простоты считаем: от сейчас + длительность всех перед нами.
-
-      let insertIndex = queue.length; // По умолчанию в конец
+      let insertIndex = queue.length;
 
       // Проходим по очереди, начиная с лидера
       for (let i = 0; i < queue.length; i++) {
         const u = queue[i];
-
-        // Сколько этот юзер займет времени?
-        // Если это текущий лидер и он уже начал, можно посчитать точнее,
-        // но для планирования берем полную duration или остаток.
-        // Упрощение: считаем duration
         accumulatedTimeMs += u.duration * 60 * 1000;
-
         const predictedFinishTime = now + accumulatedTimeMs;
 
-        // ЛОГИКА:
-        // Если (Сейчас + Очередь до i включительно) <= НашеЦелевоеВремя
-        // Значит мы можем встать ПОСЛЕ i-го пользователя.
         if (predictedFinishTime <= targetTimestamp) {
-          // Мы можем встать после i, но проверим следующего, вдруг и там успеваем?
-          // Поэтому просто идем дальше, а insertIndex будет обновляться
           insertIndex = i + 1;
         } else {
-          // Как только мы превысили лимит - дальше проверять нет смысла,
-          // мы уже не влезаем раньше. Останавливаемся.
           break;
         }
       }
-
-      // Защита: Нельзя встать на место 0 (сместить текущего),
-      // но insertIndex начинается с поиска после 0, так что все ок.
-      // Если insertIndex == queue.length, значит splice добавит в конец.
 
       queue.splice(insertIndex, 0, newUser);
       return true;
@@ -86,20 +79,74 @@ export const queueService = {
 
   remove: (userId) => {
     const previousQueue = [...queue];
-    queue = queue.filter(u => u.id !== userId);
 
-    const newFirst = queue[0];
+    // 1. Находим и удаляем уходящего
+    const indexToRemove = queue.findIndex(u => u.id === userId);
+    if (indexToRemove === -1) {
+      return { success: false };
+    }
 
-    // Если появился новый лидер, засекаем ему время
-    if (newFirst && (!previousQueue[0] || previousQueue[0].id !== newFirst.id)) {
-      // Важно: если он уже был в очереди, startTime у него null, ставим сейчас
-      if (!newFirst.startTime) {
-        newFirst.startTime = Date.now();
+    const wasFirst = (indexToRemove === 0);
+    queue.splice(indexToRemove, 1);
+
+    // -------------------------------------------------------------------------
+    // ФИЧА №2 (Enhanced): Поиск любого подходящего кандидата
+    // Работает, если ушел Первый и очередь не пуста.
+    // -------------------------------------------------------------------------
+
+    if (wasFirst && queue.length > 0) {
+      const newLeader = queue[0];
+      const now = Date.now();
+
+      // Проверяем, является ли новый лидер "Ждуном"
+      if (newLeader.targetTime && newLeader.targetTime > now) {
+
+        // Вычисляем доступное окно времени
+        const gapMs = newLeader.targetTime - now;
+
+        // Ищем кандидата, начиная со второго человека (индекс 1)
+        // Критерии:
+        // 1. Нет привязки ко времени (!u.targetTime) - чтобы не ломать его планы
+        // 2. Его длительность влезает в окно
+
+        const candidateIndex = queue.findIndex((u, idx) => {
+          if (idx === 0) return false; // Пропускаем самого лидера
+          if (u.targetTime) return false; // Игнорируем других "ждунов"
+
+          const durationMs = u.duration * 60 * 1000;
+          return durationMs <= gapMs;
+        });
+
+        // Если нашли подходящего
+        if (candidateIndex !== -1) {
+          // Вырезаем его из текущей позиции
+          const [luckyUser] = queue.splice(candidateIndex, 1);
+
+          // Вставляем в самое начало
+          queue.unshift(luckyUser);
+
+          // Ему начинаем отсчет прямо сейчас
+          queue[0].startTime = now;
+
+          // "Ждун" сместился на index 1, его startTime пока null
+          if (queue[1]) queue[1].startTime = null;
+        }
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // Инициализация (если перестановок не было или после перестановки)
+    // -------------------------------------------------------------------------
+
+    if (queue.length > 0) {
+      // Если у первого нет времени старта - ставим сейчас.
+      if (!queue[0].startTime) {
+        queue[0].startTime = Date.now();
       }
     }
 
     return {
-      success: previousQueue.length !== queue.length,
+      success: true,
       oldFirst: previousQueue[0],
       newFirst: queue[0]
     };
