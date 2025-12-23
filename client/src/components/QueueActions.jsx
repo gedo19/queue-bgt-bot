@@ -14,7 +14,6 @@ export function QueueActions({ isInQueue, onJoin, onLeave }) {
 
   const handleJoinClick = () => {
     let targetTimestamp = null;
-
     if (targetTime) {
       // 1. Берем текущую дату пользователя
       const now = new Date();
