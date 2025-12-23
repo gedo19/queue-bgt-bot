@@ -1,8 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export function QueueActions({ isInQueue, onJoin, onLeave }) {
   const [duration, setDuration] = useState('');
   const [targetTime, setTargetTime] = useState(''); // "17:00"
+
+  useEffect(() => {
+    if (isInQueue) {
+      // Если мы успешно попали в очередь, сбрасываем поля в исходное состояние
+      setDuration('');
+      setTargetTimeStr('');
+    }
+  }, [isInQueue]);
 
   const handleJoinClick = () => {
     let targetTimestamp = null;
