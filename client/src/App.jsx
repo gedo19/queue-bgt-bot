@@ -12,7 +12,8 @@ function App() {
     joinQueue,
     leaveQueue,
     isInQueue,
-    isFirst
+    isFirst,
+    hasStartTime
   } = useQueue(user);
 
   // Обертки с вибрацией
@@ -33,7 +34,7 @@ function App() {
       <div className="container">
         <h1 className="text-center mb-4">📋 Очередь</h1>
 
-        <StatusAlert isFirst={isFirst} />
+        <StatusAlert isFirst={isFirst} hasStartTime={hasStartTime} />
 
         <div className="card mb-4 shadow-sm border-secondary">
           <div className="card-header bg-secondary text-white">
