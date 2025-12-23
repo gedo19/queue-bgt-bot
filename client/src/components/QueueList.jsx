@@ -101,6 +101,12 @@ export function QueueList({ queue, currentUserId }) {
                      {u.duration} мин
                    </span>
                 )}
+
+                {u.targetTime && (
+                  <span className="badge bg-info text-dark ms-1" title="Забронированное время">
+        🕒 {new Date(u.targetTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+    </span>
+                )}
               </div>
             </div>
 

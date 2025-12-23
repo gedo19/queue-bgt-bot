@@ -18,18 +18,28 @@ export function useQueue(user) {
       setQueue(newQueue);
     }
 
+    function onError(message) {
+      if(WebApp.HapticFeedback) {
+        WebApp.HapticFeedback.notificationOccurred('error');
+      }
+
+      WebApp.showAlert(message);
+    }
+
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
     socket.on('updateQueue', onUpdateQueue);
+    socket.on('error', onError);
 
     return () => {
       socket.off('connect', onConnect);
       socket.off('disconnect', onDisconnect);
       socket.off('updateQueue', onUpdateQueue);
+      socket.on('error', onError);
     };
   }, []);
 
-  const joinQueue = (duration) => {
+  const joinQueue = (duration, targetTime) => {
     if (user) {
       socket.emit('join', {
         user: {
@@ -37,7 +47,8 @@ export function useQueue(user) {
           firstName: user.first_name,
           username: user.username
         },
-        duration: duration // <-- Передаем минуты
+        duration: duration,
+        targetTime: targetTime,
       });
     }
   };
