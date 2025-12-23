@@ -6,6 +6,13 @@ export function setupSocket(io, bot) {
     const queue = queueService.get();
     const currentLeader = queue[0];
 
+    if (!currentLeader.startTime && currentLeader.targetTime) {
+      if (now >= currentLeader.targetTime) {
+        queueService.startTimerForLeader(now);
+        io.emit('updateQueue', queueService.get());
+      }
+    }
+
     if (currentLeader && currentLeader.startTime && !currentLeader.notifiedTimeout) {
       const elapsed = Date.now() - currentLeader.startTime;
       const limit = currentLeader.duration * 60 * 1000; // минуты -> мс
