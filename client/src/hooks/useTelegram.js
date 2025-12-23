@@ -19,7 +19,9 @@ export function useTelegram() {
       setUser(WebApp.initDataUnsafe.user);
     } else {
       // Mock-юзер для разработки в браузере
-      setUser({ id: 111, first_name: 'TestUser', username: 'tester' });
+      const n = Math.floor(Math.random() * 10) + 1;
+      if (n <= 5) setUser({ id: 111, first_name: 'TestUser 1', username: 'tester1' });
+      if (n > 5 && n <= 10) setUser({ id: 222, first_name: 'TestUser 2', username: 'tester2' });
     }
   }, []);
 
