@@ -4,11 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node server.js",
-    "client": "npm run dev --prefix client",
-    "build:client": "npm run build --prefix client",
-    "dev": "concurrently \"npm run start\" \"npm run client\" --names \"SERVER,CLIENT\" --prefix-colors \"yellow,cyan\"",
-    "prod": "npm run build:client && node server.js"
+    "start": "node src/server.js"
   },
   "keywords": [],
   "author": "",
