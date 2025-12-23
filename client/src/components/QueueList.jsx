@@ -114,6 +114,11 @@ export function QueueList({ queue, currentUserId }) {
                   )}
                 </div>
 
+                {u.description && (
+                  <div className="text-muted small mt-1 fst-italic text-break">
+                    {u.description}
+                  </div>
+                )}
               </div>
             </div>
 

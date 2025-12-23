@@ -16,9 +16,9 @@ function App() {
   } = useQueue(user);
 
   // Обертки с вибрацией
-  const handleJoin = (duration, targetTime) => {
+  const handleJoin = (duration, targetTime, description) => {
     haptic();
-    joinQueue(duration, targetTime);
+    joinQueue(duration, targetTime, description);
   };
 
   const handleLeave = () => {

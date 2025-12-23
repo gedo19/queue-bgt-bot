@@ -58,7 +58,7 @@ export function setupSocket(io, bot) {
     socket.emit('updateQueue', queueService.get());
 
     // 2. Вход в очередь
-    socket.on('join', async ({ user, duration, targetTime }) => {
+    socket.on('join', async ({ user, duration, targetTime, description }) => {
       const isAllowed = await whitelistService.check(user.id);
 
       if (!isAllowed) {
@@ -79,7 +79,7 @@ export function setupSocket(io, bot) {
         }
       }
 
-      if (queueService.add(user, minutes, targetTime)) {
+      if (queueService.add(user, minutes, targetTime, description)) {
         io.emit('updateQueue', queueService.get());
       }
     });

@@ -41,7 +41,7 @@ export function useQueue(user) {
     };
   }, []);
 
-  const joinQueue = (duration, targetTime) => {
+  const joinQueue = (duration, targetTime, description) => {
     if (user) {
       socket.emit('join', {
         user: {
@@ -51,6 +51,7 @@ export function useQueue(user) {
         },
         duration: duration,
         targetTime: targetTime,
+        description: description
       });
     }
   };
