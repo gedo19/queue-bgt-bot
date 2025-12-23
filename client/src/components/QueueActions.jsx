@@ -8,7 +8,7 @@ export function QueueActions({ isInQueue, onJoin, onLeave }) {
     if (isInQueue) {
       // Если мы успешно попали в очередь, сбрасываем поля в исходное состояние
       setDuration('');
-      setTargetTimeStr('');
+      setTargetTime('');
     }
   }, [isInQueue]);
 
