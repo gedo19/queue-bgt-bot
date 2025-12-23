@@ -59,7 +59,6 @@ export function QueueList({ queue, currentUserId }) {
       {queue.map((u, index) => {
         const isMe = u.id === currentUserId;
         const isFirst = index === 0;
-        const hasUsername = !!u.username;
 
         return (
           <li
@@ -67,50 +66,59 @@ export function QueueList({ queue, currentUserId }) {
             className={`list-group-item d-flex justify-content-between align-items-center ${isMe ? 'active border-primary' : ''}`}
           >
             <div className="d-flex align-items-center flex-grow-1 overflow-hidden">
-              <span className={`badge ${isFirst ? 'bg-warning text-dark' : 'bg-secondary'} me-2 rounded-pill flex-shrink-0`}>
+              {/* Номер очереди (слева, фиксирован) */}
+              <span className={`badge ${isFirst ? 'bg-warning text-dark' : 'bg-secondary'} me-3 rounded-pill flex-shrink-0 align-self-start mt-1`}>
                 #{index + 1}
               </span>
 
-              <div className="text-truncate">
-                {!isMe ? (
-                  <button
-                    className="btn btn-link p-0 text-decoration-none fw-bold me-2 text-start text-truncate"
-                    style={{ color: 'inherit', maxWidth: '100%' }}
-                    onClick={() => openChat(u)} // Передаем весь объект u
-                  >
-                    {u.firstName} <small className="opacity-75">
-                    {/* Показываем ник или заглушку */}
-                    {u.username ? `(@${u.username})` : ''} ↗
-                  </small>
-                  </button>
-                ) : (
-                  // Для себя оставляем просто текст
-                  <span className="fw-bold me-2">
-                    {u.firstName} {u.username ? `(@${u.username})` : ''}
-                  </span>
-                )}
+              {/* Блок контента: Имя сверху, Инфо снизу */}
+              <div className="d-flex flex-column overflow-hidden w-100">
 
-                {/* Показываем таймер ТОЛЬКО для первого */}
-                {isFirst && (
-                  <Countdown startTime={u.startTime} durationMinutes={u.duration} />
-                )}
+                {/* 1. Верхняя строка: Имя */}
+                <div className="text-truncate mb-1">
+                  {!isMe ? (
+                    <button
+                      className="btn btn-link p-0 text-decoration-none fw-bold text-start text-truncate w-100"
+                      style={{ color: 'inherit' }}
+                      onClick={() => openChat(u)}
+                    >
+                      {u.firstName} <small className="opacity-75">{u.username ? `(@${u.username})` : ''} ↗</small>
+                    </button>
+                  ) : (
+                    <span className="fw-bold">
+                      {u.firstName} {u.username ? `(@${u.username})` : ''}
+                    </span>
+                  )}
+                </div>
 
-                {/* Для остальных показываем сколько они заявили времени */}
-                {!isFirst && u.duration && (
-                  <span className="badge bg-secondary opacity-50 ms-1" style={{fontSize: '0.7em'}}>
-                     {u.duration} мин
-                   </span>
-                )}
+                {/* 2. Нижняя строка: Бейджи и таймеры */}
+                <div className="d-flex flex-wrap gap-1 align-items-center">
 
-                {u.targetTime && (
-                  <span className="badge bg-info text-dark ms-1" title="Забронированное время">
-        🕒 {new Date(u.targetTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-    </span>
-                )}
+                  {/* Таймер для первого */}
+                  {isFirst && (
+                    <Countdown startTime={u.startTime} durationMinutes={u.duration} />
+                  )}
+
+                  {/* Длительность (для всех) */}
+                  {!isFirst && u.duration && (
+                    <span className="badge bg-secondary opacity-50" style={{fontSize: '0.75em'}}>
+                       ⏳ {u.duration} мин
+                     </span>
+                  )}
+
+                  {/* Время брони (если есть) */}
+                  {u.targetTime && (
+                    <span className="badge bg-info text-dark" style={{fontSize: '0.75em'}}>
+                        🕒 {new Date(u.targetTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                    </span>
+                  )}
+                </div>
+
               </div>
             </div>
 
-            {isMe && <span className="badge bg-light text-dark ms-2 flex-shrink-0">Вы</span>}
+            {/* Метка "Вы" (справа) */}
+            {isMe && <span className="badge bg-light text-dark ms-2 flex-shrink-0 align-self-start mt-1">Вы</span>}
           </li>
         );
       })}
