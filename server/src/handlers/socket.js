@@ -117,7 +117,7 @@ async function notifyNewLeader(bot, user) {
     console.log(`🔔 Уведомляем нового лидера: ${user.id} (${user.username})`);
     await bot.telegram.sendMessage(
       user.id,
-      `🚨 <b>Подошла твоя очередь!</b>`,
+      `🚨 <b>Ты первый в очереди!</b>`,
       { parse_mode: 'HTML' }
     );
   } catch (error) {
