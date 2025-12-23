@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import WebApp from '@twa-dev/sdk'; // Импортируем SDK
 
-function Countdown({ startTime, durationMinutes }) {
+function Countdown({ startTime, durationMinutes, targetTime }) {
   const [timeLeft, setTimeLeft] = useState(null);
 
   useEffect(() => {
@@ -23,7 +23,18 @@ function Countdown({ startTime, durationMinutes }) {
     return () => clearInterval(interval);
   }, [startTime, durationMinutes]);
 
-  if (!startTime) return <span className="text-muted small">Ожидание...</span>;
+  if (!startTime) {
+    if (targetTime) {
+      // Показываем время до старта
+      const start = new Date(targetTime);
+      return (
+        <span className="badge bg-secondary ms-1">
+               Старт в {start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+             </span>
+      );
+    }
+    return <span className="text-muted small">Ожидание...</span>;
+  }
 
   // Красим в красный, если "скоро", иначе в зеленый/белый
   const isUrgent = timeLeft === '~скоро';
@@ -96,7 +107,11 @@ export function QueueList({ queue, currentUserId }) {
 
                   {/* Таймер для первого */}
                   {isFirst && (
-                    <Countdown startTime={u.startTime} durationMinutes={u.duration} />
+                    <Countdown
+                      startTime={u.startTime}
+                      durationMinutes={u.duration}
+                      targetTime={u.targetTime}
+                    />
                   )}
 
                   {/* Длительность (для всех) */}

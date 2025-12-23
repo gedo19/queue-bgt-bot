@@ -4,6 +4,14 @@ import { WHITELIST_PATH } from '../config.js';
 // Хранилище в памяти
 let queue = [];
 
+function resolveStartTime(user) {
+  if (!user.targetTime) return Date.now();
+
+  if (user.targetTime <= Date.now()) return Date.now();
+
+  return null;
+}
+
 export const queueService = {
   get: () => [...queue],
 
@@ -26,7 +34,7 @@ export const queueService = {
       };
 
       if (queue.length === 0) {
-        newUser.startTime = Date.now();
+        newUser.startTime = resolveStartTime(newUser);
         queue.push(newUser);
         return true;
       }
@@ -139,9 +147,10 @@ export const queueService = {
     // -------------------------------------------------------------------------
 
     if (queue.length > 0) {
+      const leader = queue[0];
       // Если у первого нет времени старта - ставим сейчас.
-      if (!queue[0].startTime) {
-        queue[0].startTime = Date.now();
+      if (!leader.startTime) {
+        leader.startTime = resolveStartTime(leader);
       }
     }
 
@@ -150,6 +159,12 @@ export const queueService = {
       oldFirst: previousQueue[0],
       newFirst: queue[0]
     };
+  },
+
+  startTimerForLeader: (timestamp) => {
+    if (queue.length > 0) {
+      queue[0].startTime = timestamp;
+    }
   },
 
   // Метод для чекера таймеров (чтобы менять флаг notifiedTimeout)
