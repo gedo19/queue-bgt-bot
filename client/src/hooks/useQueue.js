@@ -66,7 +66,6 @@ export function useQueue(user) {
   const isInQueue = user && queue.some(u => u.id === user.id);
   const isFirst = user && queue.length > 0 && queue[0].id === user.id;
   const myPosition = user ? queue.findIndex(u => u.id === user.id) + 1 : 0;
-  const hasStartTime = user && user.startTime;
 
   return {
     queue,
@@ -76,6 +75,5 @@ export function useQueue(user) {
     isInQueue,
     isFirst,
     myPosition,
-    hasStartTime
   };
 }

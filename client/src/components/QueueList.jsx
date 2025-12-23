@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import WebApp from '@twa-dev/sdk'; // Импортируем SDK
+import WebApp from '@twa-dev/sdk';
 
 function Countdown({ startTime, durationMinutes, targetTime }) {
   const [timeLeft, setTimeLeft] = useState(null);
@@ -124,7 +124,7 @@ export function QueueList({ queue, currentUserId }) {
                   {/* Время брони (если есть) */}
                   {u.targetTime && (
                     <span className="badge bg-info text-dark" style={{fontSize: '0.75em'}}>
-                        🕒 {new Date(u.targetTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                        🕒 {new Date(u.targetTime).toLocaleTimeString(['ru-RU'], { weekday: "short", hour: '2-digit', minute:'2-digit'})}
                     </span>
                   )}
                 </div>
